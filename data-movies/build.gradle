@@ -1,0 +1,34 @@
+apply plugin: 'com.android.library'
+apply from: '../sharedconfigs-include.gradle'
+
+android {
+    namespace 'app.bettermetesttask.datamovies'
+}
+
+dependencies {
+    implementation project(":domain-core")
+    implementation project(":domain-movies")
+
+    implementation kotlinDependencies.kotlinStdLib
+
+    implementation developmentDependencies.timber
+
+    implementation kotlinDependencies.coroutinesCore
+    implementation kotlinDependencies.coroutinesAndroid
+
+    implementation diDependencies.dagger
+    kapt diDependencies.daggerCompiler
+
+    implementation dataDependencies.room
+    kapt dataDependencies.roomCompiler
+
+    testImplementation testDependencies.mockito
+    testImplementation testDependencies.mockitoKotlin
+    testImplementation testDependencies.mockitoInline
+    testImplementation testDependencies.assertJ
+    testImplementation testDependencies.jUnitJupiter
+    testImplementation testDependencies.jupiterEngine
+    testImplementation testDependencies.jupiterParametrized
+    testImplementation testDependencies.jupiterMockitoRunner
+    testImplementation androidTestDependencies.testCoroutines
+}

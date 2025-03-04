@@ -1,0 +1,41 @@
+apply plugin: 'com.android.library'
+apply from: '../sharedconfigs-include.gradle'
+
+android {
+    namespace 'app.bettermetesttask.featurecommon'
+}
+
+dependencies {
+    implementation project(":domain-core")
+    implementation kotlinDependencies.kotlinStdLib
+    implementation kotlinDependencies.coroutinesCore
+
+    implementation androidXDependencies.appCompat
+    implementation androidXDependencies.design
+    implementation androidXDependencies.constraintLayout
+    implementation androidXDependencies.androidKtx
+    implementation androidXDependencies.navigationFragment
+    implementation androidXDependencies.lifecycleExtensions
+    implementation androidXDependencies.lifecycle
+
+    implementation uiDependencies.glide
+    kapt uiDependencies.glideCompiler
+
+    implementation diDependencies.dagger
+    kapt diDependencies.daggerCompiler
+    implementation diDependencies.daggerAndroid
+    implementation diDependencies.daggerAndroidSupport
+    kapt diDependencies.daggerAndroidProcessor
+
+    implementation developmentDependencies.timber
+
+    testImplementation testDependencies.mockito
+    testImplementation testDependencies.mockitoKotlin
+    testImplementation testDependencies.mockitoInline
+    testImplementation testDependencies.assertJ
+    testImplementation testDependencies.jUnitJupiter
+    testImplementation testDependencies.jupiterEngine
+    testImplementation testDependencies.jupiterParametrized
+    testImplementation testDependencies.jupiterMockitoRunner
+    testImplementation androidTestDependencies.testCoroutines
+}

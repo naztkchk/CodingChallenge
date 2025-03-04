@@ -1,0 +1,66 @@
+apply plugin: 'com.android.application'
+apply from: '../sharedconfigs-include.gradle'
+
+android {
+    namespace 'app.bettermetesttask'
+
+    defaultConfig {
+        applicationId "app.androidtesttask"
+        versionCode 1
+    }
+
+    buildTypes {
+        debug {
+            multiDexEnabled true
+            minifyEnabled false
+            crunchPngs false
+            debuggable true
+        }
+        release {
+            multiDexEnabled true
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
+            crunchPngs true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    kapt {
+        // Avoid kapt mechanism that replaces every unknown type with NonExistentClass (for better dagger errors)
+        correctErrorTypes = true
+    }
+}
+
+dependencies {
+    // Domain
+    implementation project(":domain-core")
+    implementation project(":domain-movies")
+
+    // Data
+    implementation project(":data-movies")
+
+    // Features
+    implementation project(":feature-common")
+    implementation project(":feature-movies")
+
+    implementation androidXDependencies.appCompat
+    implementation androidXDependencies.constraintLayout
+    implementation androidXDependencies.design
+    implementation androidXDependencies.lifecycle
+    implementation androidXDependencies.lifecycleExtensions
+    implementation androidXDependencies.navigationFragment
+    implementation androidXDependencies.navigationUi
+    implementation androidXDependencies.androidKtx
+
+    implementation diDependencies.dagger
+    kapt diDependencies.daggerCompiler
+    implementation diDependencies.daggerAndroid
+    implementation diDependencies.daggerAndroidSupport
+    kapt diDependencies.daggerAndroidProcessor
+
+    implementation developmentDependencies.timber
+
+    implementation dataDependencies.room
+    kapt dataDependencies.roomCompiler
+}

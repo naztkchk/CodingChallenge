@@ -1,0 +1,90 @@
+apply plugin: "de.mannodermaus.android-junit5"
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+
+/**
+ * To avoid code duplication all common android modules related setup is done here.
+ * When using it you still have to specify stuff like
+ *
+ * apply plugin: 'com.android.application'
+ *
+ * or
+ *
+ * apply plugin: 'com.android.library
+ *
+ * and all the dependencies via
+ *
+ * dependencies { ... }*
+ * -------------------------------
+ *
+ * */
+
+android {
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    defaultConfig {
+        buildToolsVersion buildToolsVer
+        minSdkVersion minSdkVer
+        targetSdkVersion targetSdkVer
+        compileSdkVersion compileSdkVer
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [
+                        "room.schemaLocation"  : "$projectDir/schemas".toString(),
+                        "room.incremental"     : "true",
+                        "room.expandProjection": "true"
+                ]
+            }
+        }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+
+    // Forcing proper java version across all the builds
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+
+    kotlinOptions {
+        jvmTarget = jvmTargetVer
+    }
+
+// Uncomment if you're having trouble with version incompatibility
+//    java {
+//        toolchain {
+//            languageVersion = JavaLanguageVersion.of(17)
+//        }
+//    }
+
+    if (gradle.startParameter.taskNames
+            .collect { item -> item.contains("UnitTestKotlin") }
+            .contains(true)) {
+        kotlinOptions.jvmTarget = jvmTargetVer
+    }
+
+    // Setting reports location for each module and using junit platform
+    testOptions {
+        unitTests.all {
+            jvmArgs '-noverify'
+            // Always show the result of every unit test, even if it passes.
+            ignoreFailures = true
+            // path to the directory in which results will be stored (prefix connected- + modulename)
+            reports.junitXml.destination = file("../build/connected-$project.name")
+        }
+
+        junitPlatform {
+            filters {
+                engines {
+                    include 'junit', 'junit-jupiter'
+                }
+            }
+            jacocoOptions.taskGenerationEnabled = false
+        }
+    }
+}
