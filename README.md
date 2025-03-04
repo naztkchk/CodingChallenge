@@ -2,7 +2,9 @@
 
 ###### Movies client with offline-mode
 
-Create the application which allows user to review the list of ongoing movies and add them to
+### General task:
+
+Create the application which allows user to view the list of ongoing movies and add them to
 bookmarks with the following requirements:
 
 #### Technical requirements
@@ -27,13 +29,19 @@ bookmarks with the following requirements:
   There is no difference in requirements for both options - just choose whatever is more convenient
   for you.
 - Just imagine `MoviesRestStore` is a component which interacts with the real Movies database API
-  (even though it's not :D).
+  (even though it's not).
 - You can change any code in this project as you wish
 
-#### Sample of the UI (XML):
+<table>
+  <tr>
+    <td>Sample UI (XML)</td>
+    <td>Sample UI (Compose)</td>
+  </tr>
+  <tr>
+    <td><img src="/ui_sample_xml.png" width="300"></td>
+    <td><img src="/ui_sample_compose.png" width="300"></td>
+  </tr>
+</table>
 
-![Sample of the UI](/ui_sample_xml.png)
 
-#### Sample of the UI (Compose):
 
-![Sample of the UI](/ui_sample_compose.png)
