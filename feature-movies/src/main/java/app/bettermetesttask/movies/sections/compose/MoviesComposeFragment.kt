@@ -5,12 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +50,7 @@ import app.bettermetesttask.featurecommon.injection.utils.Injectable
 import app.bettermetesttask.featurecommon.injection.viewmodel.SimpleViewModelProviderFactory
 import app.bettermetesttask.movies.sections.MoviesState
 import app.bettermetesttask.movies.sections.MoviesViewModel
+import app.bettermetesttask.movies.sections.SelectedMovieState
 import coil3.compose.AsyncImage
 import javax.inject.Inject
 import javax.inject.Provider
@@ -71,11 +77,21 @@ class MoviesComposeFragment : Fragment(), Injectable {
             )
             setContent {
                 val viewState by viewModel.moviesStateFlow.collectAsState()
-                MoviesComposeScreen(viewState, likeMovie = { movie ->
-                    viewModel.likeMovie(movie)
-                }, viewLoaded = {
-                    viewModel.loadMovies()
-                })
+                val selectedMovieState by viewModel.selectedMovieStateFlow.collectAsState()
+
+                MoviesComposeScreen(
+                    moviesState = viewState,
+                    onLikeClicked = viewModel::likeMovie,
+                    onViewLoaded = viewModel::loadMovies,
+                    onMovieClicked = viewModel::openMovieDetails
+                )
+
+                if (selectedMovieState is SelectedMovieState.Open) {
+                    MovieDetailsDialog(
+                        movie = (selectedMovieState as SelectedMovieState.Open).movie,
+                        onClose = viewModel::closeMovieDetails
+                    )
+                }
             }
         }
     }
@@ -84,28 +100,29 @@ class MoviesComposeFragment : Fragment(), Injectable {
 @Composable
 private fun MoviesComposeScreen(
     moviesState: MoviesState,
-    likeMovie: (Movie) -> Unit,
-    viewLoaded: () -> Unit
+    onMovieClicked: (Movie) -> Unit,
+    onLikeClicked: (Movie) -> Unit,
+    onViewLoaded: () -> Unit
 ) {
-    viewLoaded()
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
         when (moviesState) {
-            MoviesState.Initial -> {}
+            is MoviesState.Initial -> {}
             is MoviesState.Loaded -> {
                 LazyColumn {
-                    items(moviesState.movies) { item ->
-                        MovieItem(item, onLikeClicked = {
-                            likeMovie(item)
-                        })
+                    items(moviesState.movies) { movie ->
+                        MovieItem(
+                            movie = movie,
+                            onMovieClicked = onMovieClicked,
+                            onLikeClicked = onLikeClicked
+                        )
                     }
                 }
             }
-
-            MoviesState.Loading -> {
+            is MoviesState.Loading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -113,16 +130,31 @@ private fun MoviesComposeScreen(
                     CircularProgressIndicator()
                 }
             }
+            is MoviesState.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "An error occurred: ${moviesState.exception.message}",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                        Button(onClick = { onViewLoaded() }) {
+                            Text("Retry")
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun MovieItem(movie: Movie, onLikeClicked: (Int) -> Unit) {
+fun MovieItem(movie: Movie, onMovieClicked: (Movie) -> Unit, onLikeClicked: (Movie) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable { onMovieClicked(movie) },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
@@ -150,7 +182,7 @@ fun MovieItem(movie: Movie, onLikeClicked: (Int) -> Unit) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            IconButton(onClick = { onLikeClicked(movie.id) }) {
+            IconButton(onClick = { onLikeClicked(movie) }) {
                 Icon(
                     imageVector = if (movie.liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = "Like Button",
@@ -159,6 +191,29 @@ fun MovieItem(movie: Movie, onLikeClicked: (Int) -> Unit) {
             }
         }
     }
+}
+
+@Composable
+fun MovieDetailsDialog(movie: Movie, onClose: () -> Unit) {
+    AlertDialog(onDismissRequest = onClose, title = { Text(text = movie.title) }, text = {
+        Column {
+            AsyncImage(
+                model = movie.posterPath,
+                contentDescription = "${movie.title} Poster",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.Gray)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = movie.description)
+        }
+    }, confirmButton = {
+        Button(onClick = onClose) {
+            Text("Close")
+        }
+    })
 }
 
 @Composable
@@ -174,5 +229,5 @@ private fun PreviewsMoviesComposeScreen() {
                 liked = index % 2 == 0,
             )
         }
-    ), likeMovie = {}, viewLoaded = {})
+    ), onMovieClicked = {}, onLikeClicked = {}, onViewLoaded = {})
 }
