@@ -16,10 +16,13 @@ interface MoviesDao{
     suspend fun selectMovies(): List<MovieEntity>
 
     @Query("SELECT * FROM MoviesTable WHERE id = :id")
-    suspend fun selectMovieById(id: Int): List<MovieEntity>
+    suspend fun selectMovieById(id: Int): MovieEntity
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertMovie(movie: MovieEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertMovies(movies: List<MovieEntity>)
 
     @Update
     suspend fun updateMovie(movie: MovieEntity)

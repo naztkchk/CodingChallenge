@@ -16,12 +16,16 @@ class MoviesLocalStore @Inject constructor(
     private val moviesDao: MoviesDao
         get() = database.getMoviesDao()
 
+    suspend fun insertMovies(movies: List<MovieEntity>) {
+        moviesDao.insertMovies(movies)
+    }
+
     suspend fun getMovies(): List<MovieEntity> {
         return moviesDao.selectMovies()
     }
 
     suspend fun getMovie(id: Int): MovieEntity {
-        return moviesDao.selectMovieById(id).first()
+        return moviesDao.selectMovieById(id)
     }
 
     suspend fun likeMovie(id: Int) {

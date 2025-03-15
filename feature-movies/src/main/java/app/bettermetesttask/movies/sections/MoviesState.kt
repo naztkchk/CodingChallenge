@@ -9,4 +9,6 @@ sealed class MoviesState {
     object Loading : MoviesState()
 
     data class Loaded(val movies: List<Movie>) : MoviesState()
+
+    data class Error(val exception: Throwable) : MoviesState()
 }

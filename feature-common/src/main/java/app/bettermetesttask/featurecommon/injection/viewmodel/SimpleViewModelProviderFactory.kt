@@ -9,6 +9,7 @@ class SimpleViewModelProviderFactory<T : ViewModel>(
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        @Suppress("UNCHECKED_CAST")
         return provider.get() as T
     }
 }
